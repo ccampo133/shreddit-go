@@ -256,4 +256,4 @@ __debug_bin
 
 # Other
 /.run/
-/log2fluent
+/internal/reddit/integration_test.go
