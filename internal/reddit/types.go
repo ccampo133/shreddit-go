@@ -6,6 +6,8 @@ import (
 	"time"
 )
 
+const rateLimitErrorText = ".error.RATELIMIT.field-ratelimit"
+
 // TODO: doc -ccampo 2024-10-22
 type Listing[T any] struct {
 	Data struct {
@@ -50,4 +52,29 @@ func (t *redditTime) UnmarshalJSON(data []byte) error {
 	}
 	t.Time = time.Unix(int64(sec), 0)
 	return nil
+}
+
+// EditResponse is the response from the Reddit API when editing a comment. It
+// has a weird structure - see the tests for examples.
+type EditResponse struct {
+	JQuery  []any `json:"jquery"` // ...wat?
+	Success bool  `json:"success"`
+}
+
+// IsRateLimited checks if the response indicates that the request was rate
+// limited.
+func (resp *EditResponse) IsRateLimited() bool {
+	// Wtf kind of API is this???
+	for _, elem := range resp.JQuery {
+		if arr, ok := elem.([]any); ok && len(arr) > 3 {
+			if word, ok := arr[2].(string); ok && word == "call" {
+				if arr2, ok := arr[3].([]any); ok && len(arr2) == 1 {
+					if val, ok := arr2[0].(string); ok && val == rateLimitErrorText {
+						return true
+					}
+				}
+			}
+		}
+	}
+	return false
 }
