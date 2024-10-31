@@ -34,18 +34,29 @@ type Comment struct {
 	Body       string     `json:"body"`
 	Permalink  string     `json:"permalink"`
 	Subreddit  string     `json:"subreddit"`
-	Score      int        `json:"score"`
-	CreatedUTC redditTime `json:"created_utc"`
+	Score      int  `json:"score"`
+	CreatedUTC Time `json:"created_utc"`
 }
 
+// TODO: doc -ccampo 2024-10-30
+type Post struct {
+	ID         string `json:"id"`
+	Title      string `json:"title"`
+	Permalink  string `json:"permalink"`
+	Subreddit  string `json:"subreddit"`
+	Score      int    `json:"score"`
+	CreatedUTC Time   `json:"created_utc"`
+}
+
+// Time is a type used to unmarshal Reddit's weird floating point timestamps.
 // Reddit's API returns timestamps as Unix epoch timestamps, but as floating
 // point numbers (for some reason). This type is used to unmarshal those
 // timestamps into Go's time.Time type.
-type redditTime struct {
+type Time struct {
 	time.Time
 }
 
-func (t *redditTime) UnmarshalJSON(data []byte) error {
+func (t *Time) UnmarshalJSON(data []byte) error {
 	var sec float64
 	if err := json.Unmarshal(data, &sec); err != nil {
 		return fmt.Errorf("error unmarshalling unix time: %w", err)

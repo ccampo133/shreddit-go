@@ -256,4 +256,4 @@ __debug_bin
 
 # Other
 /.run/
-/internal/reddit/integration_test.go
+*integration_test.go
