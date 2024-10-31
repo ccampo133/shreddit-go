@@ -1,7 +1,6 @@
 package shred
 
 import (
-	"context"
 	"fmt"
 	"log/slog"
 	"time"
@@ -46,28 +45,28 @@ func NewShredder(client *reddit.Client, cfg Config) *Shredder {
 }
 
 // TODO: doc -ccampo 2024-10-30
-func (s *Shredder) Shred(ctx context.Context) error {
+func (s *Shredder) Shred() error {
 	// Comments
 	if !s.cfg.SkipComments {
-		if err := pager(ctx, s.shredComments); err != nil {
+		if err := pager(s.shredComments); err != nil {
 			return fmt.Errorf("error shredding comments: %w", err)
 		}
 	}
 	// Posts
 	if !s.cfg.SkipPosts {
-		if err := pager(ctx, s.shredPosts); err != nil {
+		if err := pager(s.shredPosts); err != nil {
 			return fmt.Errorf("error shredding posts: %w", err)
 		}
 	}
 	// Saved comments
 	if !s.cfg.SkipSavedComments {
-		if err := pager(ctx, s.shredSavedComments); err != nil {
+		if err := pager(s.shredSavedComments); err != nil {
 			return fmt.Errorf("error shredding saved comments: %w", err)
 		}
 	}
 	// Saved posts
 	if !s.cfg.SkipSavedPosts {
-		if err := pager(ctx, s.shredSavedPosts); err != nil {
+		if err := pager(s.shredSavedPosts); err != nil {
 			return fmt.Errorf("error shredding saved posts: %w", err)
 		}
 	}
@@ -75,8 +74,8 @@ func (s *Shredder) Shred(ctx context.Context) error {
 }
 
 // TODO: doc -ccampo 2024-10-30
-func (s *Shredder) shredComments(ctx context.Context, after string) (string, error) {
-	res, err := s.client.GetComments(ctx, s.cfg.Username, after)
+func (s *Shredder) shredComments(after string) (string, error) {
+	res, err := s.client.GetComments(s.cfg.Username, after)
 	if err != nil {
 		return "", fmt.Errorf("error getting comments: %w", err)
 	}
@@ -101,16 +100,18 @@ func (s *Shredder) shredComments(ctx context.Context, after string) (string, err
 		}
 		// Dry run; just log what we would do.
 		if s.cfg.DryRun {
-			slog.Info("Would shred comment", "permalink", comment.Data.Permalink)
+			slog.Info("Would shred comment (dry-run)", "permalink", comment.Data.Permalink)
 			continue
 		}
-		// Edit the comment
-		if err := s.client.EditComment(ctx, comment.Data.ID, s.cfg.ReplacementComment); err != nil {
+		// Edit the comment.
+		if err := s.client.EditComment(comment.Data.ID, s.cfg.ReplacementComment); err != nil {
+			// TODO: handle rate limiting error -ccampo 2024-10-31
 			return "", fmt.Errorf("error editing comment: %w", err)
 		}
 		if !s.cfg.EditOnly {
-			// Delete the comment
-			if err := s.client.DeleteComment(ctx, comment.Data.ID); err != nil {
+			// TODO: do we need a sleep here to avoid rate limiting? -ccampo 2024-10-31
+			// Delete the comment.
+			if err := s.client.DeleteComment(comment.Data.ID); err != nil {
 				return "", fmt.Errorf("error deleting comment: %w", err)
 			}
 		}
@@ -119,31 +120,33 @@ func (s *Shredder) shredComments(ctx context.Context, after string) (string, err
 	return res.Data.After, nil
 }
 
-func (s *Shredder) shredPosts(ctx context.Context, after string) (string, error) {
+func (s *Shredder) shredPosts(after string) (string, error) {
 	// TODO: implement -ccampo 2024-10-30
 	return "", nil
 }
 
-func (s *Shredder) shredSavedComments(ctx context.Context, after string) (string, error) {
+func (s *Shredder) shredSavedComments(after string) (string, error) {
 	// TODO: implement -ccampo 2024-10-30
 	return "", nil
 }
 
-func (s *Shredder) shredSavedPosts(ctx context.Context, after string) (string, error) {
+func (s *Shredder) shredSavedPosts(after string) (string, error) {
 	// TODO: implement -ccampo 2024-10-30
 	return "", nil
 }
 
-type pageable func(ctx context.Context, cursor string) (string, error)
+// TODO: doc -ccampo 2024-10-31
+type pageable func(cursor string) (next string, err error)
 
-func pager(ctx context.Context, fn pageable) (err error) {
-	after := ""
+// TODO: doc -ccampo 2024-10-31
+func pager(fn pageable) (err error) {
+	cursor := ""
 	for {
-		after, err = fn(ctx, after)
+		cursor, err = fn(cursor)
 		if err != nil {
 			return err
 		}
-		if after == "" {
+		if cursor == "" {
 			// Done - no more items to process.
 			return nil
 		}

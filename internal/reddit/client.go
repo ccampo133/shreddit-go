@@ -61,10 +61,10 @@ func NewClient(ctx context.Context, cfg Config) (*Client, error) {
 }
 
 // TODO: doc -ccampo 2024-10-30
-func (c *Client) GetPosts(ctx context.Context, username, after string) (*Listing[Post], error) {
-	req := c.rc.R().SetContext(ctx)
+func (c *Client) GetPosts(username, after string) (*Listing[Post], error) {
+	req := c.rc.R()
 	if after != "" {
-		req.SetQueryParam("after", postFullName(after))
+		req.SetQueryParam("after", after)
 	}
 	resp, err := req.Get(fmt.Sprintf("/user/%s/submitted.json", username))
 	if err != nil {
@@ -78,12 +78,11 @@ func (c *Client) GetPosts(ctx context.Context, username, after string) (*Listing
 }
 
 // TODO: doc -ccampo 2024-10-30
-func (c *Client) GetSavedPosts(ctx context.Context, username, after string) (*Listing[Comment], error) {
+func (c *Client) GetSavedPosts(username, after string) (*Listing[Comment], error) {
 	req := c.rc.R().
-		SetContext(ctx).
 		SetQueryParams(map[string]string{"type": "links"})
 	if after != "" {
-		req.SetQueryParam("after", postFullName(after))
+		req.SetQueryParam("after", after)
 	}
 	resp, err := req.Get(fmt.Sprintf("/user/%s/saved.json", username))
 	if err != nil {
@@ -97,10 +96,10 @@ func (c *Client) GetSavedPosts(ctx context.Context, username, after string) (*Li
 }
 
 // TODO: doc -ccampo 2024-10-22
-func (c *Client) GetComments(ctx context.Context, username, after string) (*Listing[Comment], error) {
-	req := c.rc.R().SetContext(ctx)
+func (c *Client) GetComments(username, after string) (*Listing[Comment], error) {
+	req := c.rc.R()
 	if after != "" {
-		req.SetQueryParam("after", commentFullName(after))
+		req.SetQueryParam("after", after)
 	}
 	resp, err := req.Get(fmt.Sprintf("/user/%s/comments.json", username))
 	if err != nil {
@@ -114,12 +113,11 @@ func (c *Client) GetComments(ctx context.Context, username, after string) (*List
 }
 
 // TODO: doc -ccampo 2024-10-30
-func (c *Client) GetSavedComments(ctx context.Context, username, after string) (*Listing[Comment], error) {
+func (c *Client) GetSavedComments(username, after string) (*Listing[Comment], error) {
 	req := c.rc.R().
-		SetContext(ctx).
 		SetQueryParams(map[string]string{"type": "comments"})
 	if after != "" {
-		req.SetQueryParam("after", commentFullName(after))
+		req.SetQueryParam("after", after)
 	}
 	resp, err := req.Get(fmt.Sprintf("/user/%s/saved.json", username))
 	if err != nil {
@@ -133,10 +131,9 @@ func (c *Client) GetSavedComments(ctx context.Context, username, after string) (
 }
 
 // TODO: doc -ccampo 2024-10-25
-func (c *Client) EditComment(ctx context.Context, id, body string) error {
+func (c *Client) EditComment(id, body string) error {
 	fullName := commentFullName(id)
 	resp, err := c.rc.R().
-		SetContext(ctx).
 		SetQueryParams(map[string]string{"raw_json": "1"}).
 		SetFormData(map[string]string{"thing_id": fullName, "text": body}).
 		Post("/api/editusertext")
@@ -158,54 +155,52 @@ func (c *Client) EditComment(ctx context.Context, id, body string) error {
 }
 
 // TODO: doc -ccampo 2024-10-30
-func (c *Client) UnsaveComment(ctx context.Context, id string) error {
+func (c *Client) UnsaveComment(id string) error {
 	fullName := commentFullName(id)
-	if err := c.unsaveThing(ctx, fullName); err != nil {
+	if err := c.unsaveThing(fullName); err != nil {
 		return fmt.Errorf("error unsaving comment with id %s: %w", fullName, err)
 	}
 	return nil
 }
 
 // TODO: doc -ccampo 2024-10-30
-func (c *Client) UnsavePost(ctx context.Context, id string) error {
+func (c *Client) UnsavePost(id string) error {
 	fullName := postFullName(id)
-	if err := c.unsaveThing(ctx, fullName); err != nil {
+	if err := c.unsaveThing(fullName); err != nil {
 		return fmt.Errorf("error unsaving post with id %s: %w", fullName, err)
 	}
 	return nil
 }
 
 // TODO: doc -ccampo 2024-10-25
-func (c *Client) DeleteComment(ctx context.Context, id string) error {
+func (c *Client) DeleteComment(id string) error {
 	fullName := commentFullName(id)
-	if err := c.deleteThing(ctx, fullName); err != nil {
+	if err := c.deleteThing(fullName); err != nil {
 		return fmt.Errorf("error deleting comment with id %s: %w", fullName, err)
 	}
 	return nil
 }
 
 // TODO: doc -ccampo 2024-10-25
-func (c *Client) DeletePost(ctx context.Context, id string) error {
+func (c *Client) DeletePost(id string) error {
 	fullName := postFullName(id)
-	if err := c.deleteThing(ctx, fullName); err != nil {
+	if err := c.deleteThing(fullName); err != nil {
 		return fmt.Errorf("error deleting post with id %s: %w", fullName, err)
 	}
 	return nil
 }
 
 // TODO: doc -ccampo 2024-10-30
-func (c *Client) unsaveThing(ctx context.Context, fullName string) error {
+func (c *Client) unsaveThing(fullName string) error {
 	_, err := c.rc.R().
-		SetContext(ctx).
 		SetFormData(map[string]string{"id": fullName}).
 		Post("/api/unsave")
 	return err
 }
 
 // TODO: doc -ccampo 2024-10-25
-func (c *Client) deleteThing(ctx context.Context, fullName string) error {
+func (c *Client) deleteThing(fullName string) error {
 	_, err := c.rc.R().
-		SetContext(ctx).
 		SetFormData(map[string]string{"id": fullName}).
 		Post("/api/del")
 	return err
