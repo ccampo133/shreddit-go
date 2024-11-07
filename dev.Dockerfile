@@ -20,7 +20,7 @@ RUN CGO_ENABLED=0 go build \
     -ldflags="-s -w -X main.version=$VERSION" \
     -o shreddit main.go
 
-FROM scratch
+FROM gcr.io/distroless/static-debian12:debug
 
 COPY --from=build /app/shreddit /
 

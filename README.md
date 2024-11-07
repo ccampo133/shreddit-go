@@ -77,3 +77,9 @@ To build a local Docker image called `shreddit`:
 ```bash
 make docker-build
 ```
+
+To run [GoReleaser](https://goreleaser.com/) locally (for debugging):
+
+```bash
+goreleaser release --snapshot --clean --verbose --skip=publish
+```
