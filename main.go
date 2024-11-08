@@ -18,6 +18,7 @@ type CLI struct {
 	DryRun             bool             `help:"Don't actually remove anything - just log what would be removed." env:"SHREDDIT_DRY_RUN"`
 	ThingTypes         []string         `help:"Thing types to remove. Possible values: posts, comments, friends, saved-posts, saved-comments" `
 	Before             time.Time        `help:"Remove things before this date." env:"SHREDDIT_BEFORE"`
+	MaxDays            *int             `help:"Remove things older than this many days. Doesn't apply if using 'before'." env:"SHREDDIT_MAX_DAYS"`
 	MaxScore           *int             `help:"Remove things with a karma score less than this." env:"SHREDDIT_MAX_SCORE"`
 	ReplacementComment string           `help:"Comment to replace removed comments with." short:"r" default:"[deleted]" env:"SHREDDIT_REPLACEMENT_COMMENT"`
 	UserAgent          string           `help:"Reddit user agent." default:"shreddit-go" env:"SHREDDIT_USER_AGENT"`
@@ -72,6 +73,7 @@ func (cli *CLI) Run() error {
 		EditOnly:           cli.EditOnly,
 		Before:             cli.Before,
 		MaxScore:           cli.MaxScore,
+		MaxDays:            cli.MaxDays,
 		ReplacementComment: cli.ReplacementComment,
 		// TODO: skip comments/posts/saved
 	}

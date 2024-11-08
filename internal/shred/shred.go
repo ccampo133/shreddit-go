@@ -24,6 +24,7 @@ type Config struct {
 	EditOnly           bool
 	Before             time.Time
 	MaxScore           *int
+	MaxDays            *int
 	ReplacementComment string
 }
 
@@ -37,6 +38,9 @@ type Shredder struct {
 func NewShredder(client *reddit.Client, cfg Config) *Shredder {
 	if cfg.Before.IsZero() {
 		cfg.Before = time.Now()
+		if cfg.MaxDays != nil {
+			cfg.Before = cfg.Before.AddDate(0, 0, -*cfg.MaxDays)
+		}
 	}
 	if cfg.ReplacementComment == "" {
 		cfg.ReplacementComment = DefaultReplacementComment
