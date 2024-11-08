@@ -26,6 +26,7 @@ type Config struct {
 	MaxScore           *int
 	MaxDays            *int
 	ReplacementComment string
+	Sleep              time.Duration
 }
 
 // TODO: doc -ccampo 2024-10-30
@@ -45,6 +46,9 @@ func NewShredder(client *reddit.Client, cfg Config) *Shredder {
 	if cfg.ReplacementComment == "" {
 		cfg.ReplacementComment = DefaultReplacementComment
 	}
+	if cfg.Sleep == 0 {
+		cfg.Sleep = 2 * time.Second
+	}
 	return &Shredder{client: client, cfg: cfg}
 }
 
@@ -52,25 +56,25 @@ func NewShredder(client *reddit.Client, cfg Config) *Shredder {
 func (s *Shredder) Shred() error {
 	// Comments
 	if !s.cfg.SkipComments {
-		if err := pager(s.shredComments); err != nil {
+		if err := s.pager(s.shredComments); err != nil {
 			return fmt.Errorf("error shredding comments: %w", err)
 		}
 	}
 	// Posts
 	if !s.cfg.SkipPosts {
-		if err := pager(s.shredPosts); err != nil {
+		if err := s.pager(s.shredPosts); err != nil {
 			return fmt.Errorf("error shredding posts: %w", err)
 		}
 	}
 	// Saved comments
 	if !s.cfg.SkipSavedComments {
-		if err := pager(s.shredSavedComments); err != nil {
+		if err := s.pager(s.shredSavedComments); err != nil {
 			return fmt.Errorf("error shredding saved comments: %w", err)
 		}
 	}
 	// Saved posts
 	if !s.cfg.SkipSavedPosts {
-		if err := pager(s.shredSavedPosts); err != nil {
+		if err := s.pager(s.shredSavedPosts); err != nil {
 			return fmt.Errorf("error shredding saved posts: %w", err)
 		}
 	}
@@ -83,7 +87,7 @@ func (s *Shredder) shredComments(after string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("error getting comments: %w", err)
 	}
-	for _, comment := range res.Data.Children {
+	for i, comment := range res.Data.Children {
 		// Skip comments younger than the cutoff time.
 		if comment.Data.CreatedUTC.Time.After(s.cfg.Before) {
 			slog.Info(
@@ -113,20 +117,59 @@ func (s *Shredder) shredComments(after string) (string, error) {
 			return "", fmt.Errorf("error editing comment: %w", err)
 		}
 		if !s.cfg.EditOnly {
-			// TODO: do we need a sleep here to avoid rate limiting? -ccampo 2024-10-31
+			time.Sleep(s.cfg.Sleep)
 			// Delete the comment.
 			if err := s.client.DeleteComment(comment.Data.ID); err != nil {
 				return "", fmt.Errorf("error deleting comment: %w", err)
 			}
 		}
 		slog.Info("Successfully shredded comment", "permalink", comment.Data.Permalink)
+		if i < len(res.Data.Children)-1 {
+			time.Sleep(s.cfg.Sleep)
+		}
 	}
 	return res.Data.After, nil
 }
 
 func (s *Shredder) shredPosts(after string) (string, error) {
-	// TODO: implement -ccampo 2024-10-30
-	return "", nil
+	res, err := s.client.GetPosts(s.cfg.Username, after)
+	if err != nil {
+		return "", fmt.Errorf("error getting posts: %w", err)
+	}
+	for i, post := range res.Data.Children {
+		// Skip posts younger than the cutoff time.
+		if post.Data.CreatedUTC.Time.After(s.cfg.Before) {
+			slog.Info(
+				"Skipping posts (created after cutoff)",
+				"created", post.Data.CreatedUTC.Time,
+				"permalink", post.Data.Permalink,
+			)
+			continue
+		}
+		// Skip posts with a score above the cutoff.
+		if s.cfg.MaxScore != nil && post.Data.Score > *s.cfg.MaxScore {
+			slog.Info(
+				"Skipping post (score > max score)",
+				"score", post.Data.Score,
+				"permalink", post.Data.Permalink,
+			)
+			continue
+		}
+		// Dry run; just log what we would do.
+		if s.cfg.DryRun {
+			slog.Info("Would shred post (dry-run)", "permalink", post.Data.Permalink)
+			continue
+		}
+		// Delete the post.
+		if err := s.client.DeletePost(post.Data.ID); err != nil {
+			return "", fmt.Errorf("error deleting post: %w", err)
+		}
+		slog.Info("Successfully shredded post", "permalink", post.Data.Permalink)
+		if i < len(res.Data.Children)-1 {
+			time.Sleep(s.cfg.Sleep)
+		}
+	}
+	return res.Data.After, nil
 }
 
 func (s *Shredder) shredSavedComments(after string) (string, error) {
@@ -143,7 +186,7 @@ func (s *Shredder) shredSavedPosts(after string) (string, error) {
 type pageable func(cursor string) (next string, err error)
 
 // TODO: doc -ccampo 2024-10-31
-func pager(fn pageable) (err error) {
+func (s *Shredder) pager(fn pageable) (err error) {
 	cursor := ""
 	for {
 		cursor, err = fn(cursor)
@@ -155,7 +198,6 @@ func pager(fn pageable) (err error) {
 			return nil
 		}
 		// Sleep for a bit to avoid rate limiting.
-		// TODO: make sleep configurable -ccampo 2024-10-31
-		time.Sleep(2 * time.Second)
+		time.Sleep(s.cfg.Sleep)
 	}
 }

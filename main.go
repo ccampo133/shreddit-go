@@ -24,6 +24,7 @@ type CLI struct {
 	UserAgent          string           `help:"Reddit user agent." default:"shreddit-go" env:"SHREDDIT_USER_AGENT"`
 	GdprExportDir      string           `help:"The path of the directory of the unzipped GDPR export data. If set, will use the GDPR export data instead of Reddit's APIs for discovering your data." env:"SHREDDIT_GDPR_EXPORT_DIR"`
 	EditOnly           bool             `help:"Only edit comments, don't remove them." env:"SHREDDIT_EDIT_ONLY"`
+	Sleep              time.Duration    `help:"Time to sleep between requests." env:"SHREDDIT_SLEEP"`
 	Version            kong.VersionFlag `name:"version" short:"v" help:"Print version information and quit"`
 }
 
@@ -75,6 +76,7 @@ func (cli *CLI) Run() error {
 		MaxScore:           cli.MaxScore,
 		MaxDays:            cli.MaxDays,
 		ReplacementComment: cli.ReplacementComment,
+		Sleep:              cli.Sleep,
 		// TODO: skip comments/posts/saved
 	}
 	shredder := shred.NewShredder(client, cfg)
