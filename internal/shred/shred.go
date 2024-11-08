@@ -9,11 +9,11 @@ import (
 )
 
 const (
-	// TODO: doc -ccampo 2024-10-30
+	// TODO: doc -2024-10-30
 	DefaultReplacementComment = "[deleted]"
 )
 
-// TODO: doc -ccampo 2024-10-30
+// TODO: doc -2024-10-30
 type Config struct {
 	Username           string
 	DryRun             bool
@@ -29,13 +29,13 @@ type Config struct {
 	Sleep              time.Duration
 }
 
-// TODO: doc -ccampo 2024-10-30
+// TODO: doc -2024-10-30
 type Shredder struct {
 	client *reddit.Client
 	cfg    Config
 }
 
-// TODO: doc -ccampo 2024-10-30
+// TODO: doc -2024-10-30
 func NewShredder(client *reddit.Client, cfg Config) *Shredder {
 	if cfg.Before.IsZero() {
 		cfg.Before = time.Now()
@@ -52,7 +52,7 @@ func NewShredder(client *reddit.Client, cfg Config) *Shredder {
 	return &Shredder{client: client, cfg: cfg}
 }
 
-// TODO: doc -ccampo 2024-10-30
+// TODO: doc -2024-10-30
 func (s *Shredder) Shred() error {
 	// Comments
 	if !s.cfg.SkipComments {
@@ -81,7 +81,7 @@ func (s *Shredder) Shred() error {
 	return nil
 }
 
-// TODO: doc -ccampo 2024-10-30
+// TODO: doc -2024-10-30
 func (s *Shredder) shredComments(after string) (string, error) {
 	res, err := s.client.GetComments(s.cfg.Username, after)
 	if err != nil {
@@ -113,7 +113,7 @@ func (s *Shredder) shredComments(after string) (string, error) {
 		}
 		// Edit the comment.
 		if err := s.client.EditComment(comment.Data.ID, s.cfg.ReplacementComment); err != nil {
-			// TODO: handle rate limiting error -ccampo 2024-10-31
+			// TODO: handle rate limiting error -2024-10-31
 			return "", fmt.Errorf("error editing comment: %w", err)
 		}
 		if !s.cfg.EditOnly {
@@ -173,19 +173,19 @@ func (s *Shredder) shredPosts(after string) (string, error) {
 }
 
 func (s *Shredder) shredSavedComments(after string) (string, error) {
-	// TODO: implement -ccampo 2024-10-30
+	// TODO: implement -2024-10-30
 	return "", nil
 }
 
 func (s *Shredder) shredSavedPosts(after string) (string, error) {
-	// TODO: implement -ccampo 2024-10-30
+	// TODO: implement -2024-10-30
 	return "", nil
 }
 
-// TODO: doc -ccampo 2024-10-31
+// TODO: doc -2024-10-31
 type pageable func(cursor string) (next string, err error)
 
-// TODO: doc -ccampo 2024-10-31
+// TODO: doc -2024-10-31
 func (s *Shredder) pager(fn pageable) (err error) {
 	cursor := ""
 	for {

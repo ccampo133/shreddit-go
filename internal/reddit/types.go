@@ -8,7 +8,7 @@ import (
 
 const rateLimitErrorText = ".error.RATELIMIT.field-ratelimit"
 
-// TODO: doc -ccampo 2024-10-22
+// TODO: doc -2024-10-22
 type Listing[T any] struct {
 	Data struct {
 		Before   string `json:"before"`
@@ -19,7 +19,7 @@ type Listing[T any] struct {
 	} `json:"data"`
 }
 
-// TODO: doc -ccampo 2024-10-22
+// TODO: doc -2024-10-22
 func (l *Listing[T]) Items() []T {
 	items := make([]T, 0, len(l.Data.Children))
 	for _, item := range l.Data.Children {
@@ -28,7 +28,7 @@ func (l *Listing[T]) Items() []T {
 	return items
 }
 
-// TODO: doc -ccampo 2024-10-22
+// TODO: doc -2024-10-22
 type Comment struct {
 	ID         string     `json:"id"`
 	Body       string     `json:"body"`
@@ -38,7 +38,7 @@ type Comment struct {
 	CreatedUTC Time `json:"created_utc"`
 }
 
-// TODO: doc -ccampo 2024-10-30
+// TODO: doc -2024-10-30
 type Post struct {
 	ID         string `json:"id"`
 	Title      string `json:"title"`

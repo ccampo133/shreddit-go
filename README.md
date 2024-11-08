@@ -1,14 +1,27 @@
 # shreddit-go
 
-TODO
+`shreddit` is a small command-line utility for deleting Reddit data. Deleting a 
+Reddit account will not delete comments or submissions - it will only
+disassociate your account from them.
+
+You can use `shreddit` to overwrite your comments with text before deleting them
+to ensure that the originals are (probably) not preserved.
+
+If you don't want your post history to follow you around forever, you can use 
+`shreddit` on a cron job.
+
+If you're deactivating your account, you can run `shreddit` first to ensure your
+posts are deleted.
 
 ## Overview
 
-TODO
+`shreddit` is a Go implementation of the popular 
+[original Python version](https://github.com/x89/Shreddit) and the subsequent 
+[Rust fork](https://github.com/andrewbanchich/shreddit).
 
-## Usage
-
-TODO
+I've tried to keep the command-line interface as similar as possible to the
+Rust version, but there are some subtle differences. Please see the help output
+for the most up-to-date information.
 
 ## Installation
 
@@ -54,6 +67,29 @@ docker run --rm ghcr.io/ccampo133/shreddit:latest
 ```
 
 Tags for each version of `shreddit` are released, as well as a `latest` tag.
+
+## Usage
+
+```bash
+shreddit --help
+```
+
+### Create Reddit App Credentials
+
+1. Navigate to Reddit -> preferences -> apps (tab) and click `create another app...`
+    - Access page directly at https://www.reddit.com/prefs/apps
+2. Give the app a name, like 'shreddit`. The name doesn't matter.
+3. Select `script`.
+4. Set the redirect URL to be `http://localhost:8080`.
+5. Click `create app`.
+
+This will provide with a client ID and client secret. The `CLIENT_ID` value used
+by `shreddit` is shown under the name of the app you created. The
+`CLIENT_SECRET` is shown after clicking `edit`.
+
+> IMPORTANT: TOTP is not supported at this time. If you have 2FA enabled, you
+> will need to disable it to use `shreddit`.
+
 
 ## Development
 

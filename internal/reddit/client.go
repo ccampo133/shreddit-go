@@ -18,7 +18,7 @@ var (
 	ErrRateLimited = fmt.Errorf("rate limited")
 )
 
-// TODO: doc -ccampo 2024-10-22
+// TODO: doc -2024-10-22
 type Config struct {
 	BaseURL      string
 	ClientID     string
@@ -28,12 +28,12 @@ type Config struct {
 	UserAgent    string
 }
 
-// TODO: doc -ccampo 2024-10-22
+// TODO: doc -2024-10-22
 type Client struct {
 	rc *resty.Client
 }
 
-// TODO: doc -ccampo 2024-10-22
+// TODO: doc -2024-10-22
 func NewClient(ctx context.Context, cfg Config) (*Client, error) {
 	// Set defaults.
 	if cfg.BaseURL == "" {
@@ -60,7 +60,7 @@ func NewClient(ctx context.Context, cfg Config) (*Client, error) {
 	return &Client{rc: rc}, nil
 }
 
-// TODO: doc -ccampo 2024-10-30
+// TODO: doc -2024-10-30
 func (c *Client) GetPosts(username, after string) (*Listing[Post], error) {
 	req := c.rc.R()
 	if after != "" {
@@ -77,7 +77,7 @@ func (c *Client) GetPosts(username, after string) (*Listing[Post], error) {
 	return &body, nil
 }
 
-// TODO: doc -ccampo 2024-10-30
+// TODO: doc -2024-10-30
 func (c *Client) GetSavedPosts(username, after string) (*Listing[Comment], error) {
 	req := c.rc.R().
 		SetQueryParams(map[string]string{"type": "links"})
@@ -95,7 +95,7 @@ func (c *Client) GetSavedPosts(username, after string) (*Listing[Comment], error
 	return &body, nil
 }
 
-// TODO: doc -ccampo 2024-10-22
+// TODO: doc -2024-10-22
 func (c *Client) GetComments(username, after string) (*Listing[Comment], error) {
 	req := c.rc.R()
 	if after != "" {
@@ -112,7 +112,7 @@ func (c *Client) GetComments(username, after string) (*Listing[Comment], error) 
 	return &body, nil
 }
 
-// TODO: doc -ccampo 2024-10-30
+// TODO: doc -2024-10-30
 func (c *Client) GetSavedComments(username, after string) (*Listing[Comment], error) {
 	req := c.rc.R().
 		SetQueryParams(map[string]string{"type": "comments"})
@@ -130,7 +130,7 @@ func (c *Client) GetSavedComments(username, after string) (*Listing[Comment], er
 	return &body, nil
 }
 
-// TODO: doc -ccampo 2024-10-25
+// TODO: doc -2024-10-25
 func (c *Client) EditComment(id, body string) error {
 	fullName := commentFullName(id)
 	resp, err := c.rc.R().
@@ -148,13 +148,13 @@ func (c *Client) EditComment(id, body string) error {
 		if editResp.IsRateLimited() {
 			return ErrRateLimited
 		}
-		// TODO: log the response -ccampo 2024-10-25
+		// TODO: log the response -2024-10-25
 		return fmt.Errorf("API failure editing comment with id %s", fullName)
 	}
 	return nil
 }
 
-// TODO: doc -ccampo 2024-10-30
+// TODO: doc -2024-10-30
 func (c *Client) UnsaveComment(id string) error {
 	fullName := commentFullName(id)
 	if err := c.unsaveThing(fullName); err != nil {
@@ -163,7 +163,7 @@ func (c *Client) UnsaveComment(id string) error {
 	return nil
 }
 
-// TODO: doc -ccampo 2024-10-30
+// TODO: doc -2024-10-30
 func (c *Client) UnsavePost(id string) error {
 	fullName := postFullName(id)
 	if err := c.unsaveThing(fullName); err != nil {
@@ -172,7 +172,7 @@ func (c *Client) UnsavePost(id string) error {
 	return nil
 }
 
-// TODO: doc -ccampo 2024-10-25
+// TODO: doc -2024-10-25
 func (c *Client) DeleteComment(id string) error {
 	fullName := commentFullName(id)
 	if err := c.deleteThing(fullName); err != nil {
@@ -181,7 +181,7 @@ func (c *Client) DeleteComment(id string) error {
 	return nil
 }
 
-// TODO: doc -ccampo 2024-10-25
+// TODO: doc -2024-10-25
 func (c *Client) DeletePost(id string) error {
 	fullName := postFullName(id)
 	if err := c.deleteThing(fullName); err != nil {
@@ -190,7 +190,7 @@ func (c *Client) DeletePost(id string) error {
 	return nil
 }
 
-// TODO: doc -ccampo 2024-10-30
+// TODO: doc -2024-10-30
 func (c *Client) unsaveThing(fullName string) error {
 	_, err := c.rc.R().
 		SetFormData(map[string]string{"id": fullName}).
@@ -198,7 +198,7 @@ func (c *Client) unsaveThing(fullName string) error {
 	return err
 }
 
-// TODO: doc -ccampo 2024-10-25
+// TODO: doc -2024-10-25
 func (c *Client) deleteThing(fullName string) error {
 	_, err := c.rc.R().
 		SetFormData(map[string]string{"id": fullName}).
