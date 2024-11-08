@@ -20,8 +20,10 @@ RUN CGO_ENABLED=0 go build \
     -ldflags="-s -w -X main.version=$VERSION" \
     -o shreddit main.go
 
-FROM gcr.io/distroless/static-debian12:debug
+FROM debian:stable-slim
 
-COPY --from=build /app/shreddit /
+RUN apt-get update && apt-get install -y ca-certificates
 
-ENTRYPOINT ["/shreddit"]
+COPY --from=build /app/shreddit /bin/shreddit
+
+ENTRYPOINT ["/bin/shreddit"]

@@ -1,5 +1,7 @@
-FROM gcr.io/distroless/static-debian12
+FROM debian:stable-slim
 
-COPY shreddit /
+RUN apt-get update && apt-get install -y ca-certificates
 
-ENTRYPOINT ["/shreddit"]
+COPY shreddit /bin/shreddit
+
+ENTRYPOINT ["/bin/shreddit"]
