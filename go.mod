@@ -6,7 +6,7 @@ require (
 	github.com/alecthomas/kong v1.7.0
 	github.com/go-resty/resty/v2 v2.16.5
 	github.com/stretchr/testify v1.10.0
-	golang.org/x/oauth2 v0.25.0
+	golang.org/x/oauth2 v0.26.0
 )
 
 require (
