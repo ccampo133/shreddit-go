@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/go-resty/resty/v2"
-	"golang.org/x/oauth2"
 )
 
 const (
@@ -42,19 +41,13 @@ func NewClient(ctx context.Context, cfg Config) (*Client, error) {
 	if cfg.UserAgent == "" {
 		cfg.UserAgent = defaultUserAgent
 	}
-	// Configure auto-refreshing OAuth2 client.
-	oauthCfg := &oauth2.Config{
-		ClientID:     cfg.ClientID,
-		ClientSecret: cfg.ClientSecret,
-		Endpoint: oauth2.Endpoint{
-			TokenURL: fmt.Sprintf("%s/api/v1/access_token", cfg.BaseURL),
-		},
-	}
-	tok, err := oauthCfg.PasswordCredentialsToken(ctx, cfg.Username, cfg.Password)
+
+	httpClient, err := NewOAuth2Client(ctx, cfg)
 	if err != nil {
-		return nil, fmt.Errorf("error getting token: %w", err)
+		return nil, err
 	}
-	rc := resty.NewWithClient(oauthCfg.Client(ctx, tok)).
+
+	rc := resty.NewWithClient(httpClient).
 		SetBaseURL(cfg.BaseURL).
 		SetHeader("User-Agent", cfg.UserAgent)
 	return &Client{rc: rc}, nil
