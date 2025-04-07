@@ -7,7 +7,7 @@ require (
 	github.com/cenkalti/backoff/v5 v5.0.2
 	github.com/go-resty/resty/v2 v2.16.5
 	github.com/stretchr/testify v1.10.0
-	golang.org/x/oauth2 v0.26.0
+	golang.org/x/oauth2 v0.29.0
 )
 
 require (
