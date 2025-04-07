@@ -89,7 +89,7 @@ func (s *Shredder) shredComments(after string) (string, error) {
 	}
 	for i, comment := range res.Data.Children {
 		// Skip comments younger than the cutoff time.
-		if comment.Data.CreatedUTC.Time.After(s.cfg.Before) {
+		if comment.Data.CreatedUTC.After(s.cfg.Before) {
 			slog.Info(
 				"Skipping comment (created after cutoff)",
 				"created", comment.Data.CreatedUTC.Time,
@@ -138,7 +138,7 @@ func (s *Shredder) shredPosts(after string) (string, error) {
 	}
 	for i, post := range res.Data.Children {
 		// Skip posts younger than the cutoff time.
-		if post.Data.CreatedUTC.Time.After(s.cfg.Before) {
+		if post.Data.CreatedUTC.After(s.cfg.Before) {
 			slog.Info(
 				"Skipping posts (created after cutoff)",
 				"created", post.Data.CreatedUTC.Time,
