@@ -1,13 +1,13 @@
 module github.com/ccampo133/shreddit-go
 
-go 1.23.0
+go 1.24.0
 
 require (
 	github.com/alecthomas/kong v1.12.1
 	github.com/cenkalti/backoff/v5 v5.0.3
 	github.com/go-resty/resty/v2 v2.16.5
 	github.com/stretchr/testify v1.11.1
-	golang.org/x/oauth2 v0.30.0
+	golang.org/x/oauth2 v0.31.0
 )
 
 require (
